@@ -113,7 +113,7 @@ public class MainActivityFragment extends Fragment {
         protected void onPostExecute(JSONObject json) {
             try {
                 // Getting JSON Array
-                 name = json.getJSONArray("contact");   // Quand démarre par [
+                 name = json.getJSONArray("contacts");   // Quand démarre par [
                  JSONObject c = name.getJSONObject(0);   // quand démarre par { ou quand une seule case
 
                 // Storing  JSON item in a Variable

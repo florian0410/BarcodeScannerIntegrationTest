@@ -2,18 +2,34 @@ package zlisproduction.barcodescannerintegrationtest;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.google.zxing.qrcode.QRCodeReader;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 
 /**
@@ -21,8 +37,13 @@ import com.google.zxing.qrcode.QRCodeReader;
  */
 public class MainActivityFragment extends Fragment {
 
-    Button mScannerAccess = null;
-    Context context = null;
+    private Button mScannerAccess = null;
+    private Context context = null;
+    public static TextView mTextResult;
+    private String url = "http://api.androidhive.info/contacts/";
+    JSONArray name = null;
+    private static  String title = null;
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -36,10 +57,11 @@ public class MainActivityFragment extends Fragment {
         View Layout = inflater.inflate(R.layout.fragment_main, container, false);
 
         mScannerAccess = (Button) Layout.findViewById(R.id.scanner_button);
+        mTextResult = (TextView) Layout.findViewById(R.id.ScanResult);
 
-        mScannerAccess.setOnClickListener(new View.OnClickListener(){
+        mScannerAccess.setOnClickListener(new View.OnClickListener() {
             @Override
-        public void onClick(View v){
+            public void onClick(View v) {
                 IntentIntegrator integrator = IntentIntegrator.forFragment(MainActivityFragment.this);
                 integrator.setCaptureActivity(CaptureActivityOrientation.class);
                 integrator.setOrientationLocked(true);  // verrouillage de l'orientation
@@ -53,18 +75,58 @@ public class MainActivityFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode,data);
+        Toast toast =null;
         if (scanningResult != null) {
-            // RÈcupÈrer le contenu
-            String ScanContent = scanningResult.getContents();
-            // RÈcupÈrer le format du barcode lu
+            // R√©cup√©rer le contenu
+            String scanContent = scanningResult.getContents();
+            // R√©cup√©rer le format du barcode lu
             String scanFormat = scanningResult.getFormatName();
+            new JSONParse().execute();
         }
         else{
-            Toast toast = Toast.makeText(context.getApplicationContext(),
-                    "No scan data received!", Toast.LENGTH_SHORT);
-            toast.show();
-        }
+                toast = Toast.makeText(context.getApplicationContext(),
+                        "No scan data received!", Toast.LENGTH_SHORT);
+                toast.show();
 
+        }
+        if(dbsCommunication.checkNetworkState(context)){
+            toast = Toast.makeText(context.getApplicationContext(),
+                    "Connexion internet OK", Toast.LENGTH_SHORT);
+        }
+        else{
+            toast = Toast.makeText(context.getApplicationContext(),
+                    "Connexion internet indisponible", Toast.LENGTH_SHORT);
+        }
+        toast.show();
     }
 
+    private class JSONParse extends AsyncTask<String, String, JSONObject> {
+        @Override
+        protected JSONObject doInBackground(String... args) {
+            JSONParser jParser = new JSONParser();
+
+            // Getting JSON from URL
+            JSONObject json = jParser.getJSONFromUrl(url);
+            return json;
+        }
+        @Override
+        protected void onPostExecute(JSONObject json) {
+            try {
+                // Getting JSON Array
+                 name = json.getJSONArray("contact");   // Quand d√©marre par [
+                 JSONObject c = name.getJSONObject(0);   // quand d√©marre par { ou quand une seule case
+
+                // Storing  JSON item in a Variable
+                title = c.getString("name");
+
+                //Set JSON Data in TextView
+                mTextResult.setText("Nom du produit: "+title);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
 }
+
+

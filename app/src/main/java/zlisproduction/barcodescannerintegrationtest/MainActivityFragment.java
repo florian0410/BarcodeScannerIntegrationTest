@@ -40,9 +40,9 @@ public class MainActivityFragment extends Fragment {
     private Button mScannerAccess = null;
     private Context context = null;
     public static TextView mTextResult;
-    private String url = "http://api.androidhive.info/contacts/";
+    private String url = "http://fr.openfoodfacts.org/api/v0/produit/";
     JSONArray name = null;
-    private static  String title = null;
+    private static String title = null;
 
     @Override
     public void onAttach(Activity activity) {
@@ -74,33 +74,32 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode,data);
-        Toast toast =null;
+        IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        Toast toast = null;
         if (scanningResult != null) {
             // Récupérer le contenu
             String scanContent = scanningResult.getContents();
             // Récupérer le format du barcode lu
             String scanFormat = scanningResult.getFormatName();
-            new JSONParse().execute();
-        }
-        else{
-                toast = Toast.makeText(context.getApplicationContext(),
-                        "No scan data received!", Toast.LENGTH_SHORT);
-                toast.show();
+            url = url + scanContent;
+        } else {
+            toast = Toast.makeText(context.getApplicationContext(),
+                    "No scan data received!", Toast.LENGTH_SHORT);
+            toast.show();
 
         }
-        if(dbsCommunication.checkNetworkState(context)){
+        if (dbsCommunication.checkNetworkState(context)) {
             toast = Toast.makeText(context.getApplicationContext(),
                     "Connexion internet OK", Toast.LENGTH_SHORT);
-        }
-        else{
+            new JSONParse().execute();
+        } else {
             toast = Toast.makeText(context.getApplicationContext(),
                     "Connexion internet indisponible", Toast.LENGTH_SHORT);
         }
         toast.show();
     }
 
-    private class JSONParse extends AsyncTask<String, String, JSONObject> {
+    /*private class JSONParse extends AsyncTask<String, String, JSONObject> {
         @Override
         protected JSONObject doInBackground(String... args) {
             JSONParser jParser = new JSONParser();
@@ -109,24 +108,24 @@ public class MainActivityFragment extends Fragment {
             JSONObject json = jParser.getJSONFromUrl(url);
             return json;
         }
+
         @Override
         protected void onPostExecute(JSONObject json) {
             try {
                 // Getting JSON Array
-                 name = json.getJSONArray("contacts");   // Quand démarre par [
-                 JSONObject c = name.getJSONObject(0);   // quand démarre par { ou quand une seule case
+                // name = json.getJSONArray("contacts");   // Quand démarre par [
+                JSONObject c = json.getJSONObject("product");   // quand démarre par { ou quand une seule case
 
                 // Storing  JSON item in a Variable
-                title = c.getString("name");
+                title = c.getString("product_name");
 
                 //Set JSON Data in TextView
-                mTextResult.setText("Nom du produit: "+title);
+                mTextResult.setText("Nom du produit: " + title);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
         }
-    }
+    }*/
 }
 
 

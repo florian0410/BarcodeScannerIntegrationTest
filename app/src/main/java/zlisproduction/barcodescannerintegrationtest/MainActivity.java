@@ -1,5 +1,8 @@
 package zlisproduction.barcodescannerintegrationtest;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -15,6 +18,16 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Fragment fragment = new MainActivityFragment();
+        if (fragment != null) {
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            ft.replace(R.id.frame_container, fragment);
+            // Il est important de rajouter le fragment précédent à la pile pour pouvoir le recharger si nécessaire
+            ft.addToBackStack(null);
+            ft.commit();
+        }
     }
 
 

@@ -2,6 +2,7 @@ package zlisproduction.barcodescannerintegrationtest;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -37,12 +38,8 @@ import java.io.InputStreamReader;
  */
 public class MainActivityFragment extends Fragment {
 
-    private Button mScannerAccess = null;
     private Context context = null;
-    public static TextView mTextResult;
-    private String url = "http://fr.openfoodfacts.org/api/v0/produit/";
-    JSONArray name = null;
-    private static String title = null;
+    private String mUrlPart = "http://fr.openfoodfacts.org/api/v0/produit/";
 
     @Override
     public void onAttach(Activity activity) {
@@ -56,8 +53,7 @@ public class MainActivityFragment extends Fragment {
 
         View Layout = inflater.inflate(R.layout.fragment_main, container, false);
 
-        mScannerAccess = (Button) Layout.findViewById(R.id.scanner_button);
-        mTextResult = (TextView) Layout.findViewById(R.id.ScanResult);
+        Button mScannerAccess = (Button) Layout.findViewById(R.id.scanner_button);
 
         mScannerAccess.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,30 +69,33 @@ public class MainActivityFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        String scanContent = null;
+        String scanFormat = null;
         super.onActivityResult(requestCode, resultCode, data);
         IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        Toast toast = null;
-        if (scanningResult != null) {
-            // Récupérer le contenu
-            String scanContent = scanningResult.getContents();
-            // Récupérer le format du barcode lu
-            String scanFormat = scanningResult.getFormatName();
-            url = url + scanContent;
-        } else {
-            toast = Toast.makeText(context.getApplicationContext(),
-                    "No scan data received!", Toast.LENGTH_SHORT);
-            toast.show();
+        if(dbsCommunication.checkScanAnswer(scanningResult, context)) {
+            if (scanningResult != null) {
+                // Récupérer le contenu
+                scanContent = scanningResult.getContents();
+                // Récupérer le format du barcode lu
+                scanFormat = scanningResult.getFormatName();
+            }
 
+            // Changement de fragment
+            Fragment fragment = new ProductDisplay();
+
+            // Ajout des information supplémentaires scannées
+            Bundle bundle = new Bundle();
+            bundle.putString("Content", scanContent);
+            bundle.putString("Format", scanFormat);
+            fragment.setArguments(bundle);
+
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+            transaction.replace(R.id.frame_container, fragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
         }
-        if (dbsCommunication.checkNetworkState(context)) {
-            toast = Toast.makeText(context.getApplicationContext(),
-                    "Connexion internet OK", Toast.LENGTH_SHORT);
-            new JSONParse().execute();
-        } else {
-            toast = Toast.makeText(context.getApplicationContext(),
-                    "Connexion internet indisponible", Toast.LENGTH_SHORT);
-        }
-        toast.show();
     }
 
     /*private class JSONParse extends AsyncTask<String, String, JSONObject> {

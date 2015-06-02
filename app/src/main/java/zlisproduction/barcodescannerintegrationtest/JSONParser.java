@@ -29,7 +29,7 @@ public class JSONParser {
 
     }
 
-    public JSONObject getJSONFromUrl(String url) {
+    public static JSONObject getJSONFromUrl(String url) {
 
         // Making HTTP request
         try {

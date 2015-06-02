@@ -34,13 +34,6 @@ public class ProductDisplay  extends Fragment {
     private String DynamicURL = null;   // String permettant d'avoir une URL changeante
 
 
-    private String Title = null;
-    private String Image = null;
-    private String Categories = null;
-    private String customTitle = null;
-    private String Brands = null;
-    private String Quantity = null;
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -134,21 +127,37 @@ public class ProductDisplay  extends Fragment {
             try {
                 // Getting JSON Array
                 // name = json.getJSONArray("contacts");   // Quand démarre par [
-                JSONObject c = json.getJSONObject("product");   // quand démarre par { ou quand une seule case
+                int status = json.getInt("status");
 
-                // Storing  JSON item in a Variable
-                Title = c.getString("product_name");
-                Image = c.getString("image_url");
-                Categories = c.getString("categories");
-                Brands = c.getString("brands");
-                Quantity = c.getString("quantity");
+                // Check detection produit
+                if(status == 0){
+                    mTitle.setText("Produit non reconnu");
+                    mCategories.setText("Code barre: " + mScanContent);
+                }
+                else {
+                    JSONObject c = json.getJSONObject("product");   // quand démarre par { ou quand une seule case
 
-                customTitle = Title+" - "+Brands+" - "+Quantity;
-                //Set JSON Data in TextView
-                mTitle.setText(customTitle);
-                mCategories.setText(Categories);
-                mImage.setText(Image);
+                    // Check si le produit est incomplet au niveau infos
+                    String creator = c.getString("creator");
+                    if (creator == "null") {
+                        mTitle.setText("Produit non Reconnu");
+                        mCategories.setText("Code barre :" + mScanContent);
+                    }
+                    else {
+                        // Storing  JSON item in a Variable
+                        String title = c.getString("product_name");
+                        String image = c.getString("image_url");
+                        String categories = c.getString("categories");
+                        String brands = c.getString("brands");
+                        String quantity = c.getString("quantity");
 
+                        String customTitle = title + " - " + brands + " - " + quantity;
+                        //Set JSON Data in TextView
+                        mTitle.setText(customTitle);
+                        mCategories.setText(categories);
+                        mImage.setText(image);
+                    }
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }

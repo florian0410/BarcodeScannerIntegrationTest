@@ -18,9 +18,9 @@ import org.json.JSONObject;
  */
 public class ProductDisplay  extends Fragment {
     private Context context = null;
-    private TextView mTitle = null;
-    private TextView mCategories = null;
-    private TextView mImage = null;
+    private static TextView mTitle = null;
+    private static TextView mCategories = null;
+    private static TextView mImage = null;
     private String mScanContent = null;
     private String mScanFormat = null;
     private String url = "http://fr.openfoodfacts.org/api/v0/produit/";
@@ -39,32 +39,16 @@ public class ProductDisplay  extends Fragment {
         context = activity.getApplicationContext();
     }
 
-    public String getUrl() {
-        return url;
+    public static void setmTitleContent(String pTitle) {
+        mTitle.setText(pTitle);
     }
 
-    public void setTitle(String title) {
-        Title = title;
+    public static void setmCategoriesContent(String pCategories) {
+        mCategories.setText(pCategories);
     }
 
-    public void setCustomTitle(String customTitle) {
-        this.customTitle = customTitle;
-    }
-
-    public void setCategories(String categories) {
-        Categories = categories;
-    }
-
-    public void setImage(String image) {
-        Image = image;
-    }
-
-    public void setBrands(String brands) {
-        Brands = brands;
-    }
-
-    public void setQuantity(String quantity) {
-        Quantity = quantity;
+    public static void setmImageContent(String pImage) {
+        mImage.setText(pImage);
     }
 
     @Override
@@ -76,7 +60,7 @@ public class ProductDisplay  extends Fragment {
 
         mTitle = (TextView) Layout.findViewById(R.id.title);
         mCategories = (TextView) Layout.findViewById(R.id.categories);
-        mImage = (TextView) Layout.findViewById(R.id.image);
+        mImage = (TextView) Layout.findViewById(R.id.product_picture);
 
         return Layout;
     }
@@ -92,15 +76,7 @@ public class ProductDisplay  extends Fragment {
             mScanFormat = bundle.getString("Format");
         }
         url = url+mScanContent;
-        ProductDataGetter pdd = new ProductDataGetter(url);
-        pdd.execute();
-        while(true){
-            if(pdd.getStatus() == AsyncTask.Status.FINISHED){break;}
-        }
-        mTitle.setText(pdd.getCustomTitle());
-        mCategories.setText(pdd.getCategories());
-        mImage.setText(pdd.getImage());
-
+        new JSONParse().execute();
     }
 
     private class JSONParse extends AsyncTask<String, String, JSONObject> {
@@ -127,9 +103,12 @@ public class ProductDisplay  extends Fragment {
                 Brands = c.getString("brands");
                 Quantity = c.getString("quantity");
 
-                customTitle = Title+"-"+Brands+"-"+Quantity;
+                customTitle = Title+" - "+Brands+" - "+Quantity;
                 //Set JSON Data in TextView
-                mTitle.setText("Nom du produit: " + customTitle);
+                mTitle.setText(customTitle);
+                mCategories.setText(Categories);
+                mImage.setText(Image);
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }

@@ -97,34 +97,6 @@ public class MainActivityFragment extends Fragment {
             transaction.commit();
         }
     }
-
-    /*private class JSONParse extends AsyncTask<String, String, JSONObject> {
-        @Override
-        protected JSONObject doInBackground(String... args) {
-            JSONParser jParser = new JSONParser();
-
-            // Getting JSON from URL
-            JSONObject json = jParser.getJSONFromUrl(url);
-            return json;
-        }
-
-        @Override
-        protected void onPostExecute(JSONObject json) {
-            try {
-                // Getting JSON Array
-                // name = json.getJSONArray("contacts");   // Quand démarre par [
-                JSONObject c = json.getJSONObject("product");   // quand démarre par { ou quand une seule case
-
-                // Storing  JSON item in a Variable
-                title = c.getString("product_name");
-
-                //Set JSON Data in TextView
-                mTextResult.setText("Nom du produit: " + title);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }*/
 }
 
 

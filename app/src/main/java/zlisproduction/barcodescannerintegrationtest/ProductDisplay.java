@@ -2,6 +2,7 @@ package zlisproduction.barcodescannerintegrationtest;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -83,19 +84,37 @@ public class ProductDisplay  extends Fragment {
         new JSONParse().execute();
     }
 
+    /*
+    * Quand on reçevra un résultat, on instanciera un nouveau fragment affichant celui-ci.
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        String scanContent = null;
+        String scanFormat = null;
         super.onActivityResult(requestCode, resultCode, data);
         IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if(dbsCommunication.checkScanAnswer(scanningResult, context)) {
             if (scanningResult != null) {
                 // Récupérer le contenu
-                mScanContent = scanningResult.getContents();
+                scanContent = scanningResult.getContents();
                 // Récupérer le format du barcode lu
-                mScanFormat = scanningResult.getFormatName();
+                scanFormat = scanningResult.getFormatName();
             }
-            DynamicURL = SourceURL +mScanContent;
-            new JSONParse().execute();
+
+            // Changement de fragment
+            Fragment fragment = new ProductDisplay();
+
+            // Ajout des information supplémentaires scannées
+            Bundle bundle = new Bundle();
+            bundle.putString("Content", scanContent);
+            bundle.putString("Format", scanFormat);
+            fragment.setArguments(bundle);
+
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+            transaction.replace(R.id.frame_container, fragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
         }
     }
 
